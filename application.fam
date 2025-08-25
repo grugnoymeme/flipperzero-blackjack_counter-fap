@@ -1,0 +1,13 @@
+App(
+    appid="blackjack_counter_21",
+    name="BlackJack Counter",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="blackjack_counter_app",
+    requires=["gui", "notification"],
+    stack_size=2 * 1024,
+    fap_icon="blackjack_21.png",
+    fap_category="Credit",
+    fap_description="Advanced BlackJack card counting methods with multiple systems",
+    fap_author="grugnoymeme a.k.a. 47LeCoste",
+    fap_version="1.0",
+)
