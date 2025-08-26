@@ -11,6 +11,8 @@
 #include <notification/notification.h>
 #include <notification/notification_messages.h>
 
+#include "blackjack_counter_21_icons.h"
+
 #define HOT_COUNT_THRESHOLD_CLASSIC 4
 #define HOT_COUNT_THRESHOLD_HIOPT 4
 #define HOT_COUNT_THRESHOLD_HIOPT2 6
