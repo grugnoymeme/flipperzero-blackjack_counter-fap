@@ -10,4 +10,5 @@ App(
     fap_description="Advanced BlackJack card counting methods with multiple systems",
     fap_author="grugnoymeme a.k.a. 47LeCoste",
     fap_version="1.0",
+    fap_icon_assets="icons",
 )
