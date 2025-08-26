@@ -18,6 +18,8 @@ static void blackjack_counter_menu_callback(void* context, uint32_t index) {
 }
 
 // Index view callbacks - semplici e funzionanti
+static uint32_t index_page = 0; // Pagina corrente
+
 static void blackjack_counter_index_draw_callback(Canvas* canvas, void* context) {
     UNUSED(context);
     
@@ -26,19 +28,67 @@ static void blackjack_counter_index_draw_callback(Canvas* canvas, void* context)
     canvas_set_font(canvas, FontPrimary);
     canvas_draw_str(canvas, 2, 10, "Index");
     
+    // Indicatore pagina in alto a destra
+    char page_str[16];
+    snprintf(page_str, sizeof(page_str), "%d/3", (int)(index_page + 1));
     canvas_set_font(canvas, FontBatteryPercent);
-    canvas_draw_str(canvas, 2, 20, "Hi-Lo: 2-6(+1) 7-9(0) 10-A(-1)");
-    canvas_draw_str(canvas, 2, 28, "Hi-Opt I: 3-6(+1) 2,7-9(0) 10-K(-1)");
-    canvas_draw_str(canvas, 2, 36, "Hi-Opt II: 2,3,6,7(+1) 4,5(+2)");
-    canvas_draw_str(canvas, 2, 44, "          8,9,A(0) 10-K(-2)");
-    canvas_draw_str(canvas, 2, 52, "Omega II: 2,3,7(+1) 4-6(+2)");
-    canvas_draw_str(canvas, 2, 60, "          9(-1) 10-K(-2)");
+    canvas_draw_str(canvas, 105, 10, page_str);
+    
+    canvas_set_font(canvas, FontBatteryPercent);
+    
+    if(index_page == 0) {
+        // Pagina 1 - Hi-Lo e Hi-Opt I
+        canvas_draw_str(canvas, 2, 20, "Hi-Lo:");
+        canvas_draw_str(canvas, 2, 28, "2-6 (+1), 7-9 (0),");
+        canvas_draw_str(canvas, 2, 36, "10-A(-1)");
+        canvas_draw_str(canvas, 2, 46, "Hi-Opt I:");
+        canvas_draw_str(canvas, 2, 54, "3-6 (+1), 2,7-9(0),");
+        canvas_draw_str(canvas, 2, 62, "10-K(-1), A(0)");
+    } else if(index_page == 1) {
+        // Pagina 2 - Hi-Opt II e Omega II
+        canvas_draw_str(canvas, 2, 20, "Hi-Opt II:");
+        canvas_draw_str(canvas, 2, 28, "2,3,6,7 (+1), 4,5 (+2)");
+        canvas_draw_str(canvas, 2, 36, "8,9,A (0), 10-K (-2)");
+        canvas_draw_str(canvas, 2, 46, "Omega II:");
+        canvas_draw_str(canvas, 2, 54, "2,3,7 (+1), 4-6 (+2)");
+        canvas_draw_str(canvas, 2, 62, "9 (-1), 10-K (-2), A (0)");
+    } else {
+        // Pagina 3 - Terminologia
+        canvas_draw_str(canvas, 2, 20, "RC: Running Count");
+        canvas_draw_str(canvas, 2, 28, "TC: True Count ->");
+        canvas_draw_str(canvas, 2, 36, "(RC/Decks left)");
+        canvas_draw_str(canvas, 2, 46, "Side: Separate Ace count");
+        canvas_draw_str(canvas, 2, 54, "TC: Left/Right for decks");
+        canvas_draw_str(canvas, 2, 62, "Side Cnt: Right for Aces");
+    }
 }
 
 static bool blackjack_counter_index_input_callback(InputEvent* event, void* context) {
-    UNUSED(context);
-    UNUSED(event);
-    return false;
+    View* view = (View*)context;
+    bool consumed = false;
+    
+    if(event->type == InputTypePress) {
+        switch(event->key) {
+            case InputKeyUp:
+                if(index_page > 0) {
+                    index_page--;
+                    view_commit_model(view, true); // Force redraw
+                    consumed = true;
+                }
+                break;
+            case InputKeyDown:
+                if(index_page < 2) { // 3 pagine totali (0, 1, 2)
+                    index_page++;
+                    view_commit_model(view, true); // Force redraw
+                    consumed = true;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    return consumed;
 }
 static void blackjack_counter_about_draw_callback(Canvas* canvas, void* context) {
     UNUSED(context);
@@ -47,11 +97,7 @@ static void blackjack_counter_about_draw_callback(Canvas* canvas, void* context)
     canvas_set_color(canvas, ColorBlack);
     canvas_set_font(canvas, FontPrimary);
     
-    // Placeholder text
-    canvas_draw_str(canvas, 35, 32, "Credits");
-    
-    // TODO: Add image when available
-    // canvas_draw_icon(canvas, 0, 0, &I_Credits_128x64);
+    canvas_draw_icon(canvas, 16, 0, &I_Credits_96x64);
 }
 
 static bool blackjack_counter_about_input_callback(InputEvent* event, void* context) {
@@ -98,6 +144,7 @@ BlackjackCounterApp* blackjack_counter_app_alloc() {
     
     // Index view - semplice e funzionante
     app->index_view = view_alloc();
+    view_set_context(app->index_view, app->index_view);
     view_set_draw_callback(app->index_view, blackjack_counter_index_draw_callback);
     view_set_input_callback(app->index_view, blackjack_counter_index_input_callback);
     view_dispatcher_add_view(app->view_dispatcher, BlackjackCounterViewIndex, app->index_view);
